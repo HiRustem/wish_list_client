@@ -52,7 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.logout),
             onPressed: () async {
               await userProvider.logout();
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
             },
           ),
         ],
