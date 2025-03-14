@@ -14,7 +14,6 @@ class UserProvider with ChangeNotifier {
   Future<void> loadUser() async {
     try {
       _user = await _userService.getCurrentUser();
-
       notifyListeners();
     } catch (e) {
       print('Failed to load user: $e');
@@ -26,8 +25,9 @@ class UserProvider with ChangeNotifier {
     try {
       final response = await _authService.login(email, password);
 
-      await SharedPrefs.saveToken(response['access_token']);
+      print(response);
 
+      await SharedPrefs.saveToken(response['access_token']);
       await loadUser();
     } catch (e) {
       print('Login failed: $e');
@@ -35,11 +35,23 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  Future<void> register(String email, String password, String nickname) async {
+    try {
+      final response = await _authService.register(email, password, nickname);
+
+      print(response);
+
+      await SharedPrefs.saveToken(response['token']);
+      await loadUser();
+    } catch (e) {
+      print('Registration failed: $e');
+      rethrow;
+    }
+  }
+
   Future<void> logout() async {
     await SharedPrefs.clearToken();
-
     _user = null;
-
     notifyListeners();
   }
 }

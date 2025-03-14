@@ -1,6 +1,7 @@
 // screens/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wish_list_client/screens/home_screen.dart';
 import 'package:wish_list_client/screens/register_screen.dart';
 import '../providers/user_provider.dart';
 
@@ -22,14 +23,19 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text.isNotEmpty;
   }
 
-  Future<void> _login(UserProvider userProvider, BuildContext context) async {
+  Future<void> _login() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
     setState(() {
       _isLoading = true;
     });
 
     try {
       await userProvider.login(_emailController.text, _passwordController.text);
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -43,8 +49,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-
     return Scaffold(
       appBar: AppBar(title: Text('Login')),
       body: Padding(
@@ -54,26 +58,25 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(
               controller: _emailController,
               decoration: InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
+              onChanged: (_) => setState(() {}),
             ),
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(labelText: 'Password'),
               obscureText: true,
+              keyboardType: TextInputType.visiblePassword,
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 24),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                  onPressed:
-                      () =>
-                          _areFieldsValid
-                              ? _login(userProvider, context)
-                              : null,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: Text('Login'),
-                ),
+            ElevatedButton(
+              onPressed: _areFieldsValid ? _login : null,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              child: _isLoading ? CircularProgressIndicator() : Text('Login'),
+            ),
+            SizedBox(height: 24),
             TextButton(
               onPressed: () {
                 Navigator.pushReplacement(

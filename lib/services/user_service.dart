@@ -8,39 +8,16 @@ import 'package:wish_list_client/utils/shared_prefs.dart';
 class UserService {
   final String baseUrl = dotenv.get('BASE_URL');
 
-  Future<Map<String, dynamic>> register(
-    String email,
-    String password,
-    String nickname,
-  ) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-        'nickname': nickname,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to register');
-    }
-  }
-
   Future<UserModel> getCurrentUser() async {
     final token = await SharedPrefs.getToken();
+
+    print(token);
 
     if (token == null) throw Exception('No token found');
 
     final response = await http.get(
       Uri.parse('$baseUrl/auth/me'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {

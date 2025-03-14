@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wish_list_client/providers/user_provider.dart';
 import 'package:wish_list_client/screens/home_screen.dart';
 import 'package:wish_list_client/screens/login_screen.dart';
 import 'package:wish_list_client/services/user_service.dart';
@@ -15,7 +17,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nicknameController = TextEditingController();
-  final _userService = UserService();
 
   bool _isLoading = false;
 
@@ -25,28 +26,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
-    if (_emailController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _nicknameController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
-      return;
-    }
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final response = await _userService.register(
+      await userProvider.register(
         _emailController.text,
         _passwordController.text,
         _nicknameController.text,
       );
-
-      // Сохраняем токен
-      await SharedPrefs.saveToken(response['token']);
 
       // Показываем сообщение об успешной регистрации
       ScaffoldMessenger.of(
@@ -54,11 +45,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ).showSnackBar(const SnackBar(content: Text('Registration successful!')));
 
       // Переходим на домашний экран
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+      Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
+      print(e);
+
+      if (e.toString().contains('User with this email already exists')) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Email is already in use')));
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Registration failed: $e')));
+      }
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Registration failed: $e')));
@@ -84,6 +84,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.emailAddress,
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -93,6 +94,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 border: OutlineInputBorder(),
               ),
               obscureText: true,
+              keyboardType: TextInputType.visiblePassword,
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -101,18 +104,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Nickname',
                 border: OutlineInputBorder(),
               ),
+              onChanged: (_) => setState(() {}),
             ),
             const Text('* Необязательное поле'),
             const SizedBox(height: 24),
-            _isLoading
-                ? const CircularProgressIndicator() // Индикатор загрузки
-                : ElevatedButton(
-                  onPressed: _areFieldsValid ? _register : null,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: Text('Register'),
-                ),
+            ElevatedButton(
+              onPressed: _areFieldsValid ? _register : null,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              child:
+                  _isLoading ? CircularProgressIndicator() : Text('Register'),
+            ),
             const SizedBox(height: 16),
             TextButton(
               onPressed: () {

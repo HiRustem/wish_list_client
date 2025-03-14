@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:wish_list_client/providers/user_provider.dart';
 import 'package:wish_list_client/screens/home_screen.dart';
 import 'package:wish_list_client/screens/login_screen.dart';
+import 'package:wish_list_client/screens/profile_screen.dart';
+import 'package:wish_list_client/screens/register_screen.dart';
 import 'package:wish_list_client/screens/splash_screen.dart';
 import 'package:wish_list_client/utils/shared_prefs.dart';
 
@@ -39,6 +41,13 @@ class MyApp extends StatelessWidget {
           }
         },
       ),
+      initialRoute: '/splash',
+      routes: {
+        '/splash': (context) => SplashScreen(),
+        '/login': (context) => LoginScreen(),
+        '/register': (context) => RegisterScreen(),
+        '/home': (context) => HomeScreen(),
+      },
     );
   }
 
