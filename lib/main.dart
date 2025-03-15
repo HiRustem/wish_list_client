@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:wish_list_client/providers/user_provider.dart';
 import 'package:wish_list_client/screens/home_screen.dart';
 import 'package:wish_list_client/screens/login_screen.dart';
-import 'package:wish_list_client/screens/profile_screen.dart';
 import 'package:wish_list_client/screens/register_screen.dart';
 import 'package:wish_list_client/screens/splash_screen.dart';
 import 'package:wish_list_client/utils/shared_prefs.dart';
@@ -31,17 +30,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Wishlist',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: FutureBuilder(
-        future: _checkTokenAndLoadUser(context),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Scaffold(body: Center(child: CircularProgressIndicator()));
-          } else {
-            return snapshot.data == true ? HomeScreen() : LoginScreen();
-          }
-        },
-      ),
-      initialRoute: '/splash',
+      home: SplashScreen(), // Используем SplashScreen как начальный экран
       routes: {
         '/splash': (context) => SplashScreen(),
         '/login': (context) => LoginScreen(),
@@ -49,20 +38,5 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomeScreen(),
       },
     );
-  }
-
-  Future<bool> _checkTokenAndLoadUser(BuildContext context) async {
-    final token = await SharedPrefs.getToken();
-
-    if (token == null) return false;
-
-    try {
-      await Provider.of<UserProvider>(context, listen: false).loadUser();
-
-      return true;
-    } catch (e) {
-      print('Failed to load user: $e');
-      return false;
-    }
   }
 }
