@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wish_list_client/screens/home_screen.dart';
+import 'package:wish_list_client/screens/main_screen.dart';
 import 'package:wish_list_client/screens/register_screen.dart';
 import '../providers/user_provider.dart';
 
@@ -34,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await userProvider.login(_emailController.text, _passwordController.text);
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => MainScreen()),
       );
     } catch (e) {
       ScaffoldMessenger.of(

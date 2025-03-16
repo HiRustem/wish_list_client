@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wish_list_client/components/user_avatar.dart';
 import 'package:wish_list_client/providers/user_provider.dart';
 import 'package:wish_list_client/screens/profile_screen.dart';
 import 'dart:convert';
@@ -41,22 +42,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 MaterialPageRoute(builder: (context) => ProfileScreen()),
               );
             },
-            child: CircleAvatar(
-              radius: 16,
-              backgroundImage:
-                  user.avatar != null
-                      ? MemoryImage(base64Decode(user.avatar!))
-                      : null,
-              backgroundColor: Theme.of(context).colorScheme.secondary,
-              child:
-                  user.avatar == null
-                      ? Icon(
-                        Icons.person,
-                        size: 16,
-                        color: Theme.of(context).colorScheme.onSecondary,
-                      )
-                      : null,
-            ),
           ),
         ),
       );

@@ -1,4 +1,3 @@
-// screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wish_list_client/components/custom_app_bar.dart';
@@ -22,7 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-
       await userProvider.logout();
 
       Navigator.pushReplacement(
@@ -40,6 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _createNewPost() {
+    // TODO: Реализовать логику создания нового поста
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -49,15 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: CustomAppBar(
         title: 'Home',
         showBackButton: false,
-        showAvatar: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              // Действие для создания нового поста
-            },
-          ),
-        ],
+        showAvatar: false,
+        actions: [IconButton(icon: Icon(Icons.add), onPressed: _createNewPost)],
       ),
       body: Center(
         child:
@@ -68,7 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text('Email: ${user.email}'),
                     if (user.nickname != null)
                       Text('Nickname: ${user.nickname}'),
-                    if (user.avatar != null) Image.network(user.avatar!),
                     SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: _logout,

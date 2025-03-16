@@ -21,6 +21,75 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  Future<void> updateAvatar(String avatarUrl) async {
+    if (_user == null) return;
+
+    try {
+      _user = await _userService.updateAvatar(_user!.id, avatarUrl);
+      notifyListeners();
+    } catch (e) {
+      print('Failed to update avatar: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> followUser(String followingId) async {
+    if (_user == null) return;
+
+    try {
+      await _userService.followUser(_user!.id, followingId);
+      notifyListeners();
+    } catch (e) {
+      print('Failed to follow user: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> unfollowUser(String followingId) async {
+    if (_user == null) return;
+
+    try {
+      await _userService.unfollowUser(_user!.id, followingId);
+      notifyListeners();
+    } catch (e) {
+      print('Failed to unfollow user: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<UserModel>> getFollowers() async {
+    if (_user == null) return [];
+
+    try {
+      return await _userService.getFollowers(_user!.id);
+    } catch (e) {
+      print('Failed to load followers: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<UserModel>> getFollowing() async {
+    if (_user == null) return [];
+
+    try {
+      return await _userService.getFollowing(_user!.id);
+    } catch (e) {
+      print('Failed to load following: $e');
+      rethrow;
+    }
+  }
+
+  Future<bool> isFollowing(String followingId) async {
+    if (_user == null) return false;
+
+    try {
+      return await _userService.isFollowing(_user!.id, followingId);
+    } catch (e) {
+      print('Failed to check follow status: $e');
+      rethrow;
+    }
+  }
+
   Future<void> login(String email, String password) async {
     try {
       final response = await _authService.login(email, password);

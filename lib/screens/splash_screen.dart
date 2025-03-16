@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wish_list_client/providers/user_provider.dart';
-import 'package:wish_list_client/screens/home_screen.dart';
 import 'package:wish_list_client/screens/login_screen.dart';
+import 'package:wish_list_client/screens/main_screen.dart';
 import 'package:wish_list_client/utils/shared_prefs.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -15,8 +15,9 @@ class SplashScreen extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else {
+            // Перенаправляем на MainScreen или LoginScreen с очисткой стека
             Widget nextScreen =
-                snapshot.data == true ? HomeScreen() : LoginScreen();
+                snapshot.data == true ? MainScreen() : LoginScreen();
             Future.microtask(() {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -24,7 +25,7 @@ class SplashScreen extends StatelessWidget {
                 (route) => false,
               );
             });
-            return Container();
+            return Container(); // Пустой контейнер, так как навигация произойдет сразу
           }
         },
       ),
@@ -38,7 +39,6 @@ class SplashScreen extends StatelessWidget {
 
     try {
       await Provider.of<UserProvider>(context, listen: false).loadUser();
-
       return true;
     } catch (e) {
       print('Failed to load user: $e');
