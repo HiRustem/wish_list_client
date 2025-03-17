@@ -101,6 +101,24 @@ class UserService {
     }
   }
 
+  Future<UserStats> getFollowsCount(String userId) async {
+    final token = await SharedPrefs.getToken();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/followsCount/$userId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return UserStats.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load follows count!');
+    }
+  }
+
   Future<void> followUser(String followerId, String followingId) async {
     final token = await SharedPrefs.getToken();
 

@@ -33,3 +33,17 @@ class UserModel {
     };
   }
 }
+
+class UserStats {
+  final int followersCount;
+  final int followingCount;
+
+  UserStats({required this.followersCount, required this.followingCount});
+
+  factory UserStats.fromJson(Map<String, dynamic> json) {
+    return UserStats(
+      followersCount: json['followersCount'],
+      followingCount: json['followingCount'],
+    );
+  }
+}

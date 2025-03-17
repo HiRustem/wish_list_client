@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wish_list_client/components/custom_app_bar.dart';
 import 'package:wish_list_client/screens/login_screen.dart';
+import 'package:wish_list_client/screens/wishlist_selection_screen.dart';
 import '../providers/user_provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -39,7 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _createNewPost() {
-    // TODO: Реализовать логику создания нового поста
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => WishlistSelectionScreen()),
+    );
   }
 
   @override
