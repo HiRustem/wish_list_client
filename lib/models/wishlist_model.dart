@@ -8,21 +8,10 @@ class WishlistModel {
   WishlistModel({required this.id, required this.title, required this.wishes});
 
   factory WishlistModel.fromJson(Map<String, dynamic> json) {
-    return WishlistModel(
-      id: json['id'],
-      title: json['title'],
-      wishes:
-          (json['wishes'] as List)
-              .map((wish) => WishModel.fromJson(wish))
-              .toList(),
-    );
+    return WishlistModel(id: json['id'], title: json['title'], wishes: []);
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'wishes': wishes.map((wish) => wish.toJson()).toList(),
-    };
+    return {'id': id, 'title': title};
   }
 }

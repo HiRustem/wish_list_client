@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wish_list_client/models/wish_model.dart';
 import 'package:wish_list_client/providers/wish_provider.dart';
+import 'package:wish_list_client/screens/main_screen.dart';
+import 'package:wish_list_client/screens/profile_screen.dart';
 
 class WishCreationScreen extends StatefulWidget {
   final String wishlistId;
@@ -75,16 +77,28 @@ class _WishCreationScreenState extends State<WishCreationScreen> {
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    await wishProvider.createWish(
-                      wishlistId: widget.wishlistId,
-                      title: _titleController.text,
-                      description: _descriptionController.text,
-                      imageUrl: _imageUrlController.text,
-                      link: _linkController.text,
-                      type: _type,
-                    );
+                    try {
+                      await wishProvider.createWish(
+                        wishlistId: widget.wishlistId,
+                        title: _titleController.text,
+                        description: _descriptionController.text,
+                        imageUrl: _imageUrlController.text,
+                        link: _linkController.text,
+                        type: _type,
+                      );
 
-                    Navigator.pop(context, true); // Возвращаемся с результатом
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MainScreen(currentIndex: 2),
+                        ),
+                        (route) => false,
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to create wish!')),
+                      );
+                    }
                   }
                 },
                 child: Text('Create'),

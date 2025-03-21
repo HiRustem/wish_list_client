@@ -18,14 +18,18 @@ class WishDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (wish.imageUrl != null)
-              Image.memory(
-                base64Decode(wish.imageUrl!),
+            if (wish.imageUrl != null && wish.imageUrl!.isNotEmpty)
+              Container(
+                height: 150,
                 width: double.infinity,
-                fit: BoxFit.cover,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: MemoryImage(base64Decode(wish.imageUrl!)),
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             SizedBox(height: 16),
-            Text(wish.title, style: theme.textTheme.headlineSmall),
             if (wish.description != null)
               Text(wish.description!, style: theme.textTheme.bodyMedium),
             if (wish.type == WishType.PRODUCT && wish.link != null)

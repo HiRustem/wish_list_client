@@ -41,13 +41,19 @@ class _WishlistCreationScreenState extends State<WishlistCreationScreen> {
                 onPressed: () async {
                   if (user == null) return;
 
-                  if (_formKey.currentState!.validate()) {
-                    await wishlistProvider.createWishlist(
-                      user.id,
-                      _titleController.text,
-                    );
+                  try {
+                    if (_formKey.currentState!.validate()) {
+                      await wishlistProvider.createWishlist(
+                        user.id,
+                        _titleController.text,
+                      );
 
-                    Navigator.pop(context, true);
+                      Navigator.pop(context, true);
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to create wishlist')),
+                    );
                   }
                 },
                 child: Text('Create'),

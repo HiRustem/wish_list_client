@@ -6,12 +6,19 @@ import 'package:wish_list_client/screens/search_screen.dart';
 import 'package:wish_list_client/screens/settings_screen.dart';
 
 class MainScreen extends StatefulWidget {
+  final int? currentIndex;
+
+  MainScreen({this.currentIndex});
+
   @override
-  _MainScreenState createState() => _MainScreenState();
+  _MainScreenState createState() =>
+      _MainScreenState(currentIndex: currentIndex);
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  int _currentIndex;
+
+  _MainScreenState({int? currentIndex}) : _currentIndex = currentIndex ?? 0;
 
   final List<Widget> _screens = [
     HomeScreen(),

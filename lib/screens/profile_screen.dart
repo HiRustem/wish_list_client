@@ -36,35 +36,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadData() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = widget.userId ?? userProvider.user!.id;
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userId = widget.userId ?? userProvider.user!.id;
 
-    if (widget.userId == null) {
-      _user = userProvider.user;
-    } else {
-      final currentUser = await _userService.getUserById(userId);
-      _user = currentUser;
+      if (widget.userId == null) {
+        _user = userProvider.user;
+      } else {
+        final currentUser = await _userService.getUserById(userId);
+        _user = currentUser;
 
-      if (userProvider.user != null) {
-        _isFollowing = await _userService.isFollowing(
-          userProvider.user!.id,
-          userId,
-        );
+        if (userProvider.user != null) {
+          _isFollowing = await _userService.isFollowing(
+            userProvider.user!.id,
+            userId,
+          );
+        }
       }
-    }
 
-    _userStats = await _userService.getFollowsCount(userId);
+      _userStats = await _userService.getFollowsCount(userId);
 
-    final wishlistProvider = Provider.of<WishlistProvider>(
-      context,
-      listen: false,
-    );
+      final wishlistProvider = Provider.of<WishlistProvider>(
+        context,
+        listen: false,
+      );
 
-    await wishlistProvider.loadWishlists(userId);
+      await wishlistProvider.loadWishlists(userId);
 
-    final wishProvider = Provider.of<WishProvider>(context, listen: false);
-    for (final wishlist in wishlistProvider.wishlists) {
-      await wishProvider.loadWishes(wishlist.id);
+      final wishProvider = Provider.of<WishProvider>(context, listen: false);
+
+      for (final wishlist in wishlistProvider.wishlists) {
+        await wishProvider.loadWishes(wishlist.id);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load profile!')));
     }
   }
 
@@ -141,6 +148,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (_user == null || _userStats == null) {
+              return Center(child: Text('No data available'));
             } else {
               return Column(
                 children: [
@@ -164,14 +173,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) =>
-                                      FollowersScreen(userId: _user!.id),
-                            ),
-                          );
+                          if (_user != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) =>
+                                        FollowersScreen(userId: _user!.id),
+                              ),
+                            );
+                          }
                         },
                         child: Column(
                           children: [
@@ -182,14 +193,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) =>
-                                      FollowingScreen(userId: _user!.id),
-                            ),
-                          );
+                          if (_user != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) =>
+                                        FollowingScreen(userId: _user!.id),
+                              ),
+                            );
+                          }
                         },
                         child: Column(
                           children: [
@@ -201,33 +214,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: wishlistProvider.wishlists.length,
-                      itemBuilder: (context, index) {
-                        final wishlist = wishlistProvider.wishlists[index];
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Text(
-                                wishlist.title,
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                            ),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: wishlist.wishes.length,
+                    child:
+                        wishlistProvider.wishlists.isEmpty
+                            ? Center(child: Text('No wishlists available'))
+                            : ListView.builder(
+                              itemCount: wishlistProvider.wishlists.length,
                               itemBuilder: (context, index) {
-                                final wish = wishlist.wishes[index];
-                                return WishCard(wish: wish);
+                                final wishlist =
+                                    wishlistProvider.wishlists[index];
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: Text(
+                                        wishlist.title,
+                                        style:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.titleLarge,
+                                      ),
+                                    ),
+                                    ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemCount: wishlist.wishes.length,
+                                      itemBuilder: (context, index) {
+                                        final wish = wishlist.wishes[index];
+
+                                        return WishCard(wish: wish);
+                                      },
+                                    ),
+                                  ],
+                                );
                               },
                             ),
-                          ],
-                        );
-                      },
-                    ),
                   ),
                 ],
               );
