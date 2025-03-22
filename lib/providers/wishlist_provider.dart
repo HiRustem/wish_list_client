@@ -5,17 +5,23 @@ import 'package:wish_list_client/services/wishlist_service.dart';
 class WishlistProvider with ChangeNotifier {
   final WishlistService _wishlistService = WishlistService();
   List<WishlistModel> _wishlists = [];
+  Map<String, List<WishlistModel>> _userWishlists = {};
 
   List<WishlistModel> get wishlists => _wishlists;
 
   Future<void> loadWishlists(String userId) async {
     try {
       _wishlists = await _wishlistService.findAllByUser(userId);
+      _userWishlists[userId] = _wishlists;
       notifyListeners();
     } catch (e) {
       print('Failed to load wishlists: $e');
       rethrow;
     }
+  }
+
+  List<WishlistModel> getWishlistsByUser(String userId) {
+    return _userWishlists[userId] ?? [];
   }
 
   Future<void> createWishlist(String userId, String title) async {

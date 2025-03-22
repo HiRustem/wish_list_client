@@ -8,9 +8,16 @@ class WishProvider with ChangeNotifier {
 
   List<WishModel> get wishes => _wishes;
 
+  Map<String, List<WishModel>> _wishesByWishlist = {};
+
+  List<WishModel> getWishesByWishlist(String wishlistId) {
+    return _wishesByWishlist[wishlistId] ?? [];
+  }
+
   Future<void> loadWishes(String wishlistId) async {
     try {
-      _wishes = await _wishService.findAllInWishlist(wishlistId);
+      final wishes = await _wishService.findAllInWishlist(wishlistId);
+      _wishesByWishlist[wishlistId] = wishes;
       notifyListeners();
     } catch (e) {
       print('Failed to load wishes: $e');

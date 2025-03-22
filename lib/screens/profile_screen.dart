@@ -5,8 +5,8 @@ import 'package:wish_list_client/components/user_avatar.dart';
 import 'package:wish_list_client/components/wish_card.dart';
 import 'package:wish_list_client/models/user_model.dart';
 import 'package:wish_list_client/providers/user_provider.dart';
-import 'package:wish_list_client/providers/wishlist_provider.dart';
 import 'package:wish_list_client/providers/wish_provider.dart';
+import 'package:wish_list_client/providers/wishlist_provider.dart';
 import 'package:wish_list_client/screens/followers_screen.dart';
 import 'package:wish_list_client/screens/following_screen.dart';
 import 'package:wish_list_client/screens/login_screen.dart';
@@ -15,7 +15,7 @@ import 'package:wish_list_client/services/user_service.dart';
 class ProfileScreen extends StatefulWidget {
   final String? userId;
 
-  ProfileScreen({this.userId});
+  const ProfileScreen({super.key, this.userId});
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
@@ -25,9 +25,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late Future<void> _loadDataFuture;
   UserModel? _user;
   UserStats? _userStats;
+  final UserService _userService = UserService();
   bool _isFollowing = false;
   bool _isLoadingFollow = false;
-  final UserService _userService = UserService();
 
   @override
   void initState() {
@@ -40,38 +40,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final userId = widget.userId ?? userProvider.user!.id;
 
-      if (widget.userId == null) {
-        _user = userProvider.user;
-      } else {
-        final currentUser = await _userService.getUserById(userId);
-        _user = currentUser;
+      // Загружаем данные параллельно
+      final futures = [
+        _loadUser(userId, userProvider),
+        _loadUserStats(userId),
+        _loadWishlists(userId),
+      ];
 
-        if (userProvider.user != null) {
-          _isFollowing = await _userService.isFollowing(
-            userProvider.user!.id,
-            userId,
-          );
-        }
-      }
+      await Future.wait(futures);
 
-      _userStats = await _userService.getFollowsCount(userId);
-
-      final wishlistProvider = Provider.of<WishlistProvider>(
-        context,
-        listen: false,
-      );
-
-      await wishlistProvider.loadWishlists(userId);
-
-      final wishProvider = Provider.of<WishProvider>(context, listen: false);
-
-      for (final wishlist in wishlistProvider.wishlists) {
-        await wishProvider.loadWishes(wishlist.id);
+      if (widget.userId != null && userProvider.user != null) {
+        _isFollowing = await _userService.isFollowing(
+          userProvider.user!.id,
+          userId,
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to load profile!')));
+    }
+  }
+
+  Future<void> _loadUser(String userId, UserProvider userProvider) async {
+    if (widget.userId == null) {
+      _user = userProvider.user;
+    } else {
+      _user = await _userService.getUserById(userId);
+    }
+  }
+
+  Future<void> _loadUserStats(String userId) async {
+    _userStats = await _userService.getFollowsCount(userId);
+  }
+
+  Future<void> _loadWishlists(String userId) async {
+    final wishlistProvider = Provider.of<WishlistProvider>(
+      context,
+      listen: false,
+    );
+    await wishlistProvider.loadWishlists(userId);
+
+    final wishProvider = Provider.of<WishProvider>(context, listen: false);
+    for (final wishlist in wishlistProvider.getWishlistsByUser(userId)) {
+      await wishProvider.loadWishes(wishlist.id);
     }
   }
 
@@ -116,6 +128,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final currentUser = userProvider.user;
     final wishlistProvider = Provider.of<WishlistProvider>(context);
+    final wishProvider = Provider.of<WishProvider>(context);
+
+    final userId = widget.userId ?? currentUser?.id;
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -148,9 +163,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (_user == null || _userStats == null) {
+            } else if (_user == null || _userStats == null || userId == null) {
               return Center(child: Text('No data available'));
             } else {
+              final wishlists = wishlistProvider.getWishlistsByUser(userId);
+
               return Column(
                 children: [
                   UserAvatar(avatar: _user?.avatar),
@@ -215,13 +232,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Expanded(
                     child:
-                        wishlistProvider.wishlists.isEmpty
+                        wishlists.isEmpty
                             ? Center(child: Text('No wishlists available'))
                             : ListView.builder(
-                              itemCount: wishlistProvider.wishlists.length,
+                              itemCount: wishlists.length,
                               itemBuilder: (context, index) {
-                                final wishlist =
-                                    wishlistProvider.wishlists[index];
+                                final wishlist = wishlists[index];
+                                final wishes = wishProvider.getWishesByWishlist(
+                                  wishlist.id,
+                                );
+
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -238,10 +258,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ListView.builder(
                                       shrinkWrap: true,
                                       physics: NeverScrollableScrollPhysics(),
-                                      itemCount: wishlist.wishes.length,
+                                      itemCount: wishes.length,
                                       itemBuilder: (context, index) {
-                                        final wish = wishlist.wishes[index];
-
+                                        final wish = wishes[index];
                                         return WishCard(wish: wish);
                                       },
                                     ),
